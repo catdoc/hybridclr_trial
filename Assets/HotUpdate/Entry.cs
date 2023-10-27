@@ -35,6 +35,6 @@ public static class Entry
         // 泛型实例化
         var arr = new List<MyVec3>();
         arr.Add(new MyVec3 { x = 1 });
-        Debug.Log("[Demos.Run_AOTGeneric] 成功运行泛型代码");
+        Debug.Log("[WX Test Demos.Run_AOTGeneric] 成功运行泛型代码");
     }
 }

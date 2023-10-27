@@ -52,10 +52,24 @@ namespace HybridCLR.Editor
                 var prefabAssets = new List<string>();
                 string testPrefab = $"{Application.dataPath}/Prefabs/Cube.prefab";
                 prefabAssets.Add(testPrefab);
+
                 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
                 abs.Add(new AssetBundleBuild
                 {
                     assetBundleName = "prefabs",
+                    assetNames = prefabAssets.Select(s => ToRelativeAssetPath(s)).ToArray(),
+                });
+            }
+
+            {
+                var prefabAssets = new List<string>();
+                string gameBootPrefab = $"{Application.dataPath}/Prefabs/GameBoot.prefab";
+                prefabAssets.Add(gameBootPrefab);
+
+                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+                abs.Add(new AssetBundleBuild
+                {
+                    assetBundleName = "gameboot",
                     assetNames = prefabAssets.Select(s => ToRelativeAssetPath(s)).ToArray(),
                 });
             }
@@ -133,7 +147,7 @@ namespace HybridCLR.Editor
             string streamingAssetPathDst = Application.streamingAssetsPath;
             Directory.CreateDirectory(streamingAssetPathDst);
             string outputDir = GetAssetBundleOutputDirByTarget(target);
-            var abs = new string[] { "prefabs" };
+            var abs = new string[] { "prefabs", "gameboot" };
             foreach (var ab in abs)
             {
                 string srcAb = ToRelativeAssetPath($"{outputDir}/{ab}");

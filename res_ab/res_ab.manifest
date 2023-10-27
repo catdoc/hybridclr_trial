@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 3499067969
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: gamescene
+      Dependencies: {}
+    Info_1:
+      Name: new_prefabs
+      Dependencies: {}

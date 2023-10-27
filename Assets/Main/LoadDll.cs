@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class LoadDll : MonoBehaviour
 {
@@ -46,8 +47,11 @@ public class LoadDll : MonoBehaviour
     {
         var assets = new List<string>
         {
-            "prefabs",
+            "new_prefabs",
+            "gameboot",
+            "gamescene",
             "HotUpdate.dll.bytes",
+            "Assembly-CSharp.dll.bytes",
         }.Concat(AOTMetaAssemblyFiles);
 
         foreach (var asset in assets)
@@ -83,6 +87,7 @@ public class LoadDll : MonoBehaviour
     #endregion
 
     private static Assembly _hotUpdateAss;
+    private static Assembly _gamePlayAss;
 
     /// <summary>
     /// 为aot assembly加载原始metadata， 这个代码放aot或者热更新都行。
@@ -108,20 +113,40 @@ public class LoadDll : MonoBehaviour
         LoadMetadataForAOTAssemblies();
 #if !UNITY_EDITOR
         _hotUpdateAss = Assembly.Load(ReadBytesFromStreamingAssets("HotUpdate.dll.bytes"));
+        _gamePlayAss = Assembly.Load(ReadBytesFromStreamingAssets("Assembly-CSharp.dll.bytes"));
 #else
         _hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "HotUpdate");
+        // _gamePlayAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "Assembly-CSharp");
 #endif
         Type entryType = _hotUpdateAss.GetType("Entry");
         entryType.GetMethod("Start").Invoke(null, null);
 
         Run_InstantiateComponentByAsset();
+        Run_InstantiateGamebootByAsset();
+
+        // Run_InstantiateScene();
     }
 
     private static void Run_InstantiateComponentByAsset()
     {
         // 通过实例化assetbundle中的资源，还原资源上的热更新脚本
-        AssetBundle ab = AssetBundle.LoadFromMemory(LoadDll.ReadBytesFromStreamingAssets("prefabs"));
+        AssetBundle ab = AssetBundle.LoadFromMemory(LoadDll.ReadBytesFromStreamingAssets("new_prefabs"));
         GameObject cube = ab.LoadAsset<GameObject>("Cube");
         GameObject.Instantiate(cube);
+    }
+
+     private static void Run_InstantiateGamebootByAsset()
+    {
+        // 通过实例化assetbundle中的资源，还原资源上的热更新脚本
+        AssetBundle ab = AssetBundle.LoadFromMemory(LoadDll.ReadBytesFromStreamingAssets("gameboot"));
+        GameObject cube = ab.LoadAsset<GameObject>("GameBoot");
+        GameObject.Instantiate(cube);
+    }
+
+    private static void Run_InstantiateScene() 
+    {
+        AssetBundle ab = AssetBundle.LoadFromMemory(LoadDll.ReadBytesFromStreamingAssets("gamescene"));
+        var scenePaths = ab.GetAllScenePaths();
+        SceneManager.LoadScene(scenePaths[0], LoadSceneMode.Additive); // Single
     }
 }

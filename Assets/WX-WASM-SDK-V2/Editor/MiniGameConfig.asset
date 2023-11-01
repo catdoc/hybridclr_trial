@@ -15,11 +15,11 @@ MonoBehaviour:
   ProjectConf:
     projectName: hybirdclr
     Appid: wx58ad6d6ca8525f80
-    CDN: http://10.9.161.58:8050/hybirdclr/webgl
+    CDN: http://10.9.161.46:8050/hybirdclr_clear/webgl
     assetLoadType: 0
     compressDataPackage: 0
     VideoUrl: 
-    DST: /Users/jinfeimo/wx/py_cdn/hybirdclr
+    DST: /Users/jinfeimo/wx/py_cdn/hybirdclr_clear
     StreamCDN: 
     bundleHashLength: 32
     bundlePathIdentifier: StreamingAssets;
@@ -49,7 +49,7 @@ MonoBehaviour:
     AutoProfile: 0
     ScriptOnly: 0
     Il2CppOptimizeSize: 1
-    profilingFuncs: 1
+    profilingFuncs: 0
     Webgl2: 0
     fbslim: 0
     DeleteStreamingAssets: 1

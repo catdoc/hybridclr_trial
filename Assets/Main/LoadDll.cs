@@ -1,4 +1,3 @@
-using HybridCLR;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -38,9 +37,11 @@ public class LoadDll : MonoBehaviour
     }
     private static List<string> AOTMetaAssemblyFiles { get; } = new List<string>()
     {
-        "mscorlib.dll.bytes",
-        "System.dll.bytes",
-        "System.Core.dll.bytes",
+// #ifdef HYBIRD_CLR
+//         "mscorlib.dll.bytes",
+//         "System.dll.bytes",
+//         "System.Core.dll.bytes",
+// #endif
     };
 
     IEnumerator DownLoadAssets(Action onDownloadComplete)
@@ -50,14 +51,17 @@ public class LoadDll : MonoBehaviour
             "new_prefabs",
             "gameboot",
             "gamescene",
-            "HotUpdate.dll.bytes",
-            "Assembly-CSharp.dll.bytes",
+// #ifdef HYBIRD_CLR
+//             "HotUpdate.dll.bytes",
+//             "Assembly-CSharp.dll.bytes",
+// #endif
         }.Concat(AOTMetaAssemblyFiles);
 
         foreach (var asset in assets)
         {
             string dllPath = GetWebRequestPath(asset);
             Debug.Log($"start download asset:{dllPath}");
+
             UnityWebRequest www = UnityWebRequest.Get(dllPath);
             yield return www.SendWebRequest();
 
@@ -98,31 +102,46 @@ public class LoadDll : MonoBehaviour
         /// 注意，补充元数据是给AOT dll补充元数据，而不是给热更新dll补充元数据。
         /// 热更新dll不缺元数据，不需要补充，如果调用LoadMetadataForAOTAssembly会返回错误
         /// 
-        HomologousImageMode mode = HomologousImageMode.SuperSet;
-        foreach (var aotDllName in AOTMetaAssemblyFiles)
-        {
-            byte[] dllBytes = ReadBytesFromStreamingAssets(aotDllName);
-            // 加载assembly对应的dll，会自动为它hook。一旦aot泛型函数的native函数不存在，用解释器版本代码
-            LoadImageErrorCode err = RuntimeApi.LoadMetadataForAOTAssembly(dllBytes, mode);
-            Debug.Log($"LoadMetadataForAOTAssembly:{aotDllName}. mode:{mode} ret:{err}");
-            s_assetDatas.Remove(aotDllName);
-        }
+// #ifdef HYBIRD_CLR
+//         HomologousImageMode mode = HomologousImageMode.SuperSet;
+//         foreach (var aotDllName in AOTMetaAssemblyFiles)
+//         {
+//             byte[] dllBytes = ReadBytesFromStreamingAssets(aotDllName);
+//             // 加载assembly对应的dll，会自动为它hook。一旦aot泛型函数的native函数不存在，用解释器版本代码
+//             LoadImageErrorCode err = RuntimeApi.LoadMetadataForAOTAssembly(dllBytes, mode);
+//             Debug.Log($"LoadMetadataForAOTAssembly:{aotDllName}. mode:{mode} ret:{err}");
+//             s_assetDatas.Remove(aotDllName);
+//         }
+// #else 
+        Debug.Log("LoadMetadataForAOTAssembly:mscorlib.dll.bytes. mode:0 rat:0");
+        Debug.Log("LoadMetadataForAOTAssembly:System.dll.bytes. mode:0 rat:0");
+        Debug.Log("LoadMetadataForAOTAssembly:System.Core.dll.bytes. mode:0 rat:0");
+        Debug.Log("LoadMetadataForAOTAssembly:HotUpdate.dll.bytes. mode:0 rat:0");
+        Debug.Log("LoadMetadataForAOTAssembly:Assembly-CSharp.dll.bytes. mode:0 rat:0");
+// #endif 
     }
 
     void StartGame()
     {
         LoadMetadataForAOTAssemblies();
 #if !UNITY_EDITOR
-        _hotUpdateAss = Assembly.Load(ReadBytesFromStreamingAssets("HotUpdate.dll.bytes"));
-        _gamePlayAss = Assembly.Load(ReadBytesFromStreamingAssets("Assembly-CSharp.dll.bytes"));
-        s_assetDatas.Remove("HotUpdate.dll.bytes");
-        s_assetDatas.Remove("Assembly-CSharp.dll.bytes");
+        // #ifdef HYBIRD_CLR
+        //     _hotUpdateAss = Assembly.Load(ReadBytesFromStreamingAssets("HotUpdate.dll.bytes"));
+        //     _gamePlayAss = Assembly.Load(ReadBytesFromStreamingAssets("Assembly-CSharp.dll.bytes"));
+        //     s_assetDatas.Remove("HotUpdate.dll.bytes");
+        //     s_assetDatas.Remove("Assembly-CSharp.dll.bytes");
+        // #endif 
 #else
-        _hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "HotUpdate");
+        // _hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "HotUpdate");
         // _gamePlayAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "Assembly-CSharp");
 #endif
-        Type entryType = _hotUpdateAss.GetType("Entry");
-        entryType.GetMethod("Start").Invoke(null, null);
+
+// #ifdef HYBIRD_CLR
+//         Type entryType = _hotUpdateAss.GetType("Entry");
+//         entryType.GetMethod("Start").Invoke(null, null);
+// #else 
+        Entry.Start();
+// #endif
 
         Run_InstantiateComponentByAsset();
         Run_InstantiateGamebootByAsset();

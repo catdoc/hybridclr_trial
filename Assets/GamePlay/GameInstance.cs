@@ -15,8 +15,8 @@ public class GameInstance
     }
 
     public void StartGame() 
-    {
-        Debug.Log("StartGame ... ");
+    { 
+        Debug.Log("StartGamx ... ");
     }
 
     public void UpdateGame()

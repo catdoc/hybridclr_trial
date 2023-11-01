@@ -105,6 +105,7 @@ public class LoadDll : MonoBehaviour
             // 加载assembly对应的dll，会自动为它hook。一旦aot泛型函数的native函数不存在，用解释器版本代码
             LoadImageErrorCode err = RuntimeApi.LoadMetadataForAOTAssembly(dllBytes, mode);
             Debug.Log($"LoadMetadataForAOTAssembly:{aotDllName}. mode:{mode} ret:{err}");
+            s_assetDatas.Remove(aotDllName);
         }
     }
 
@@ -114,6 +115,8 @@ public class LoadDll : MonoBehaviour
 #if !UNITY_EDITOR
         _hotUpdateAss = Assembly.Load(ReadBytesFromStreamingAssets("HotUpdate.dll.bytes"));
         _gamePlayAss = Assembly.Load(ReadBytesFromStreamingAssets("Assembly-CSharp.dll.bytes"));
+        s_assetDatas.Remove("HotUpdate.dll.bytes");
+        s_assetDatas.Remove("Assembly-CSharp.dll.bytes");
 #else
         _hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "HotUpdate");
         // _gamePlayAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == "Assembly-CSharp");
@@ -133,14 +136,16 @@ public class LoadDll : MonoBehaviour
         AssetBundle ab = AssetBundle.LoadFromMemory(LoadDll.ReadBytesFromStreamingAssets("new_prefabs"));
         GameObject cube = ab.LoadAsset<GameObject>("Cube");
         GameObject.Instantiate(cube);
+        s_assetDatas.Remove("new_prefabs");
     }
 
-     private static void Run_InstantiateGamebootByAsset()
+    private static void Run_InstantiateGamebootByAsset()
     {
         // 通过实例化assetbundle中的资源，还原资源上的热更新脚本
         AssetBundle ab = AssetBundle.LoadFromMemory(LoadDll.ReadBytesFromStreamingAssets("gameboot"));
         GameObject cube = ab.LoadAsset<GameObject>("GameBoot");
         GameObject.Instantiate(cube);
+        s_assetDatas.Remove("gameboot");
     }
 
     private static void Run_InstantiateScene() 
@@ -148,5 +153,6 @@ public class LoadDll : MonoBehaviour
         AssetBundle ab = AssetBundle.LoadFromMemory(LoadDll.ReadBytesFromStreamingAssets("gamescene"));
         var scenePaths = ab.GetAllScenePaths();
         SceneManager.LoadScene(scenePaths[0], LoadSceneMode.Additive); // Single
+        s_assetDatas.Remove("gamescene");
     }
 }

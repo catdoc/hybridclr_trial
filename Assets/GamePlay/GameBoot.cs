@@ -13,6 +13,6 @@ public class GameBoot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        GameInstance.Get().UpdateGame();
+        // GameInstance.Get().UpdateGame();
     }
 }
